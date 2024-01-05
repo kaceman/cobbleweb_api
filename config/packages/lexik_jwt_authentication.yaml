@@ -1,0 +1,5 @@
+lexik_jwt_authentication:
+    secret_key: '%env(JWT_PRIVATE_KEY_PATH)%'
+    public_key: '%env(JWT_PUBLIC_KEY_PATH)%'
+    user_identity_field: email
+    token_ttl: 3600
