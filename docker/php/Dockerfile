@@ -20,8 +20,13 @@ COPY . /var/www/html
 # Copy the custom Apache configuration
 COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
+# Enable the mod_rewrite module
+RUN a2enmod rewrite
+
 # Enable the custom Apache configuration
 RUN a2ensite 000-default
+
+RUN service apache2 restart
 
 # Install Symfony dependencies
 RUN composer install
