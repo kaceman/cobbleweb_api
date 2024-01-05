@@ -1,3 +1,24 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+api_users:
+  path: /api/users
+  controller: App\Controller\Api\UserController::all
+  methods: GET
+
+api_users_register:
+  path: /api/users/register
+  controller: App\Controller\Api\UserController::register
+  methods: POST
+
+api_users_login:
+  path: /api/users/login
+  controller: App\Controller\Api\UserController::login
+  methods: POST
+
+api_users_token_refresh:
+  path: /api/users/token/refresh
+  controller: App\Controller\Api\UserController::refresh
+  methods: POST
+
+api_user_me:
+  path: /api/users/me
+  controller: App\Controller\Api\UserController::me
+  methods: GET
