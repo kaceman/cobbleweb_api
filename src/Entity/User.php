@@ -44,7 +44,6 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\Length(min=6, max=50)
      * @Assert\Regex(
      *     pattern="/\d/",
      *     message="Your password must contain at least one number"

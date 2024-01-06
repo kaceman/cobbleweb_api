@@ -5,15 +5,16 @@ namespace App\Service;
 use App\Entity\Photo;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserService
 {
-    private $entityManager;
-    private $passwordEncoder;
-    private $validator;
+    private EntityManagerInterface $entityManager;
+    private UserPasswordEncoderInterface $passwordEncoder;
+    private ValidatorInterface $validator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -36,10 +37,7 @@ class UserService
 
         $this->generateFullName($user);
         $this->handleAvatar($user, $data['avatar']);
-
-        // Handle user photos
-        $photos = $data['photos'] ?? [];
-        $this->handlePhotos($user, $photos);
+        $this->handlePhotos($user, $data['photos']);
 
         $errors = $this->validator->validate($user);
 
@@ -54,8 +52,6 @@ class UserService
 
         $user->setPassword($this->passwordEncoder->encodePassword($user, $data['password']));
 
-        // Set other user properties as needed
-
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
@@ -67,25 +63,15 @@ class UserService
         $user->setFullName($user->getFirstName() . ' ' . $user->getLastName());
     }
 
-    private function handleAvatar(User $user, ?string $avatar): void
+    private function handlePhotos(User $user, array $photosBase64): void
     {
-        if ($avatar) {
-            $avatarPath = $this->saveAvatar($avatar);
-            $user->setAvatar($avatarPath);
-        } else {
-            $defaultAvatarPath = '/uploads/avatars/default.png';
-            $user->setAvatar($defaultAvatarPath);
-        }
-    }
-
-    private function handlePhotos(User $user, array $photos): void
-    {
-        if (count($photos) < 4) {
-            throw new \InvalidArgumentException('At least 4 photos should be uploaded.');
+        if (count($photosBase64) < 4) {
+            throw new InvalidArgumentException('At least 4 photos should be uploaded.');
         }
 
-        foreach ($photos as $photo) {
-            $this->handlePhoto($user, $photo);
+        foreach ($photosBase64 as $photoBase64) {
+            $photoFile = $this->base64ToUploadedFile($photoBase64);
+            $this->handlePhoto($user, $photoFile);
         }
     }
 
@@ -93,26 +79,37 @@ class UserService
     {
         $photoEntity = new Photo();
         $photoEntity->setName($photo->getClientOriginalName());
-        $photoEntity->setUrl($this->savePhoto($photo));
+        $photoEntity->setUrl($this->saveFile($photo, 'uploads/photos'));
         $photoEntity->setUser($user);
 
         $this->entityManager->persist($photoEntity);
     }
 
-    private function savePhoto(UploadedFile $photo): string
+    private function handleAvatar(User $user, ?string $avatarBase64): void
     {
-        $uploadDirectory = 'uploads/photos';
-        $photo->move($uploadDirectory, $photo->getClientOriginalName());
-
-        return '/' . $uploadDirectory . '/' . $photo->getClientOriginalName();
+        if ($avatarBase64) {
+            $avatarFile = $this->base64ToUploadedFile($avatarBase64);
+            $avatarPath = $this->saveFile($avatarFile, 'uploads/avatars');
+            $user->setAvatar($avatarPath);
+        } else {
+            $defaultAvatarPath = '/uploads/avatars/default.png';
+            $user->setAvatar($defaultAvatarPath);
+        }
     }
 
-    private function saveAvatar(string $avatar): string
+    private function base64ToUploadedFile(string $base64): UploadedFile
     {
-        $uploadDirectory = 'uploads/avatars';
-        $avatarFileName = 'avatar_' . uniqid() . '.png';
-        file_put_contents($uploadDirectory . '/' . $avatarFileName, base64_decode($avatar));
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'base64tofile');
+        file_put_contents($tempFilePath, base64_decode($base64));
 
-        return '/' . $uploadDirectory . '/' . $avatarFileName;
+        return new UploadedFile($tempFilePath, 'uploaded_image.png', null, null, true);
+    }
+
+    private function saveFile(UploadedFile $file, string $directory): string
+    {
+        $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($directory, $fileName);
+
+        return '/' . $directory . '/' . $fileName;
     }
 }
