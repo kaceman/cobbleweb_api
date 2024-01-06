@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
+    cron \
+    nano \
     && docker-php-ext-install zip pdo_mysql
 
 # Install Composer
@@ -19,6 +21,10 @@ COPY . /var/www/html
 
 # Copy the custom Apache configuration
 COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
+
+# Copy the cron job file into the container
+COPY ./docker/php/cronjobs /etc/cron.d/send-newsletter-cron
+RUN chmod +x /etc/cron.d/send-newsletter-cron
 
 # Enable the mod_rewrite module
 RUN a2enmod rewrite
@@ -34,8 +40,14 @@ RUN composer install
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 
+# Copy the start script
+COPY ./docker/php/start.sh /usr/local/bin/start.sh
+
+# Make the start script executable
+RUN chmod +x /usr/local/bin/start.sh
+
 # Expose port 80 for the web server
 EXPOSE 80
 
 # Start Apache in the foreground
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/start.sh"]
