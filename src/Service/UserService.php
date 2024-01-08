@@ -15,15 +15,21 @@ class UserService
     private EntityManagerInterface $entityManager;
     private UserPasswordEncoderInterface $passwordEncoder;
     private ValidatorInterface $validator;
+    private AWSService $awsService;
+    private string $AWS_FLAG;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         UserPasswordEncoderInterface $passwordEncoder,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        string $AWS_FLAG,
+        AWSService $awsService
     ) {
         $this->entityManager = $entityManager;
         $this->passwordEncoder = $passwordEncoder;
         $this->validator = $validator;
+        $this->awsService = $awsService;
+        $this->AWS_FLAG = $AWS_FLAG;
     }
 
     public function registerUser(array $data): array
@@ -79,7 +85,12 @@ class UserService
     {
         $photoEntity = new Photo();
         $photoEntity->setName($photo->getClientOriginalName());
-        $photoEntity->setUrl($this->saveFile($photo, 'uploads/photos'));
+        if ($this->AWS_FLAG) {
+            $photoPath = $this->awsService->saveFileToS3($photo, 'photos');
+        } else {
+            $photoPath = $this->saveFile($photo, 'uploads/photos');
+        }
+        $photoEntity->setUrl($photoPath);
         $photoEntity->setUser($user);
 
         $this->entityManager->persist($photoEntity);

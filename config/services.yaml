@@ -31,6 +31,13 @@ services:
             $entityManager: '@doctrine.orm.entity_manager'
             $passwordEncoder: '@security.password_encoder'
             $validator: '@validator'
+            $AWS_FLAG: '%env(AWS_FLAG)%'
+    App\Service\AWSService:
+        arguments:
+            $awsAccessKey: '%env(AWS_ACCESS_KEY_ID)%'
+            $awsSecretKey: '%env(AWS_SECRET_ACCESS_KEY)%'
+            $awsRegion: '%env(AWS_DEFAULT_REGION)%'
+            $awsS3Bucket: '%env(AWS_S3_BUCKET)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
