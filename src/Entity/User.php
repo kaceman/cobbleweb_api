@@ -64,11 +64,6 @@ class User implements UserInterface
     private $avatar;
 
     /**
-     * @ORM\Column(type="json", nullable=true)
-     */
-    private $photos;
-
-    /**
      * @ORM\Column(type="string", length=255)
      */
     private $fullName;
@@ -83,7 +78,10 @@ class User implements UserInterface
      */
     private $updatedAt;
 
-    // Getters and setters...
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Photo", mappedBy="user")
+     */
+    private $photos;
 
     public function __construct()
     {
@@ -163,18 +161,6 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getPhotos(): ?array
-    {
-        return $this->photos;
-    }
-
-    public function setPhotos(?array $photos): self
-    {
-        $this->photos = $photos;
-
-        return $this;
-    }
-
     public function getFullName(): ?string
     {
         return $this->fullName;
@@ -209,6 +195,18 @@ class User implements UserInterface
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPhotos(): array
+    {
+        $photos = [];
+        foreach ($this->photos as $item) {
+            $photos[] = $item->getUrl();
+        }
+        return $photos;
     }
 
     public function getRoles(): array

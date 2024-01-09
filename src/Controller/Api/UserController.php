@@ -63,21 +63,25 @@ class UserController extends AbstractController
         return new JsonResponse(['token' => $token]);
     }
 
-    public function refresh(JWTTokenManagerInterface $JWTManager): JsonResponse
-    {
-        $newToken = $JWTManager->refresh($this->getUser());
-
-        return new JsonResponse(['token' => $newToken]);
-    }
-
-    public function me()
+    public function me(Request $request)
     {
         $user = $this->getUser();
+
+        $avatar = $user->getAvatar();
+
+        // Check if $avatar is not empty and doesn't already contain the host
+        if ($avatar && strpos($avatar, '://') === false) {
+            // Prefix the avatar with the host
+            $avatar = $request->getSchemeAndHttpHost() . '/' . ltrim($avatar, '/');
+        }
 
         return $this->json([
             'id' => $user->getId(),
             'username' => $user->getUsername(),
             'email' => $user->getEmail(),
-        ]);
+            'avatar' => $avatar,
+            'fullName' => $user->getFullName(),
+            'photos' => $user->getPhotos(),
+        ], 200, [], ['json_encode_options' => JSON_UNESCAPED_SLASHES]);
     }
 }
