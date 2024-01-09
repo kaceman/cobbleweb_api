@@ -73,16 +73,17 @@ class UserService
         $user->setFullName($user->getFirstName() . ' ' . $user->getLastName());
     }
 
-    private function handlePhotos(User $user, array $photosBase64): void
+    private function handlePhotos(User $user, array $photosBase64): ?string
     {
         if (count($photosBase64) < 4) {
-            throw new InvalidArgumentException('At least 4 photos should be uploaded.');
+            return 'At least 4 photos should be uploaded.';
         }
 
         foreach ($photosBase64 as $photoBase64) {
             $photoFile = $this->base64ToUploadedFile($photoBase64);
             $this->handlePhoto($user, $photoFile);
         }
+        return null;
     }
 
     private function handlePhoto(User $user, UploadedFile $photo): void
