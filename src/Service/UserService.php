@@ -39,16 +39,20 @@ class UserService
         $user->setLastName($data['lastName']);
         $user->setEmail($data['email']);
 
-        $user->setPassword($this->passwordEncoder->encodePassword($user, $data['password']));
+        $errorMessages = [];
+
+        $user->setPassword($data['password']);
 
         $this->generateFullName($user);
         $this->handleAvatar($user, $data['avatar']);
-        $this->handlePhotos($user, $data['photos']);
 
         $errors = $this->validator->validate($user);
 
+        $errorMessages[] = $this->handlePhotos($user, $data['photos']);
+
+        $user->setPassword($this->passwordEncoder->encodePassword($user, $data['password']));
+
         if (count($errors) > 0) {
-            $errorMessages = [];
             foreach ($errors as $error) {
                 $errorMessages[] = $error->getMessage();
             }
