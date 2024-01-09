@@ -26,13 +26,22 @@ class UserController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $result = $this->userService->registerUser($data);
+        try {
+            $result = $this->userService->registerUser($data);
+        } catch (\Exception $e) {
+            // Catch any exception or specific exception types you want to handle
+            $errorMessage = $e->getMessage();
+
+            return new JsonResponse(['success' => false, 'error' => $errorMessage], Response::HTTP_BAD_REQUEST);
+        }
 
         if ($result['success']) {
-            return new JsonResponse(['message' => $result['message']], Response::HTTP_CREATED);
+            return new JsonResponse($result, Response::HTTP_CREATED);
         } else {
-            return new JsonResponse(['errors' => $result['errors']], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse($result, Response::HTTP_BAD_REQUEST);
         }
+
+
     }
 
     public function login(
