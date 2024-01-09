@@ -67,8 +67,6 @@ class SendNewsletterCommand extends Command
             ->subject($subject)
             ->htmlTemplate('emails/newsletter.html.twig')
             ->context([
-                'senderName' => $senderName,
-                'recipientName' => $recipientName,
                 'message' => $message,
             ]);
 
