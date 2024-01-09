@@ -4,6 +4,9 @@
 
 ```
 $ make up
+$ make enter
+$ composer install
+$ php bin/console doctrine:migrations:migrate
 ```
 
 **PS**: Docker need to be installed before launching the command above.
