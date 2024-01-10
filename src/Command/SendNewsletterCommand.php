@@ -13,9 +13,11 @@ use Symfony\Component\Mime\Address;
 
 class SendNewsletterCommand extends Command
 {
+    // Command name and description
     protected static $defaultName = 'app:send-newsletter';
     protected static string $defaultDescription = 'Send newsletter to active users created in the last week';
 
+    // Dependencies
     private UserRepository $userRepository;
     private MailerInterface $mailer;
     private ParameterBagInterface $parameterBag;
@@ -39,29 +41,36 @@ class SendNewsletterCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        // Find active users created in the last week
         $weekAgo = new \DateTime('-1 week');
         $users = $this->userRepository->findActiveUsersCreatedSince($weekAgo);
 
+        // If no active users found, display a message and exit
         if (count($users) === 0) {
             $output->writeln('No active users created in the last week.');
             return 0;
         }
 
+        // Send newsletter to each active user
         foreach ($users as $user) {
             $this->sendEmail($user->getEmail(), $user->getFullName());
         }
 
+        // Display success message
         $output->writeln('Newsletter sent successfully.');
 
         return 0;
     }
 
+    // Helper method to send an email to a user
     private function sendEmail(string $recipientEmail, string $recipientName): void
     {
+        // Email details
         $senderName = 'Cobbleweb';
         $subject = 'Your best newsletter';
         $message = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id interdum nibh. Phasellus blandit tortor in cursus convallis. Praesent et tellus fermentum, pellentesque lectus at, tincidunt risus. Quisque in nisl malesuada, aliquet nibh at, molestie libero.';
 
+        // Create a templated email
         $email = (new TemplatedEmail())
             ->from(new Address($this->parameterBag->get('MAILER_FROM'), $senderName))
             ->to($recipientEmail)
@@ -71,6 +80,7 @@ class SendNewsletterCommand extends Command
                 'message' => $message,
             ]);
 
+        // Send the email
         $this->mailer->send($email);
     }
 }

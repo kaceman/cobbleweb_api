@@ -32,8 +32,16 @@ class UserService
         $this->AWS_FLAG = $AWS_FLAG;
     }
 
+    /**
+     * Register a new user.
+     *
+     * @param array $data User data including first name, last name, email, password, avatar, and photos.
+     *
+     * @return array Registration result, including success status and messages.
+     */
     public function registerUser(array $data): array
     {
+        // Create a new User entity
         $user = new User();
         $user->setFirstName($data['firstName']);
         $user->setLastName($data['lastName']);
@@ -43,6 +51,7 @@ class UserService
 
         $user->setPassword($data['password']);
 
+        // Generate full name for the user
         $this->generateFullName($user);
         $this->handleAvatar($user, $data['avatar']);
 
@@ -50,8 +59,10 @@ class UserService
 
         $errorMessages[] = $this->handlePhotos($user, $data['photos']);
 
+        // Set and hash the user's password
         $user->setPassword($this->passwordEncoder->encodePassword($user, $data['password']));
 
+        // If there are validation errors, return an error response
         if (count($errors) > 0) {
             foreach ($errors as $error) {
                 $errorMessages[] = $error->getMessage();
@@ -113,6 +124,13 @@ class UserService
         }
     }
 
+    /**
+     * Handle the conversion of a base64-encoded string to an UploadedFile instance.
+     *
+     * @param string $base64 Base64-encoded string representing the file.
+     *
+     * @return UploadedFile The converted UploadedFile instance.
+     */
     private function base64ToUploadedFile(string $base64): UploadedFile
     {
         $tempFilePath = tempnam(sys_get_temp_dir(), 'base64tofile');
@@ -121,6 +139,14 @@ class UserService
         return new UploadedFile($tempFilePath, 'uploaded_image.png', null, null, true);
     }
 
+    /**
+     * Save the uploaded file to the specified directory and return its path.
+     *
+     * @param UploadedFile $file      The uploaded file instance.
+     * @param string       $directory The target directory.
+     *
+     * @return string The file path.
+     */
     private function saveFile(UploadedFile $file, string $directory): string
     {
         $fileName = uniqid() . '.' . $file->getClientOriginalExtension();

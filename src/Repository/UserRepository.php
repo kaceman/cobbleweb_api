@@ -24,6 +24,11 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * Adds a User entity to the database.
+     *
+     * @param User $entity The User entity to be added.
+     * @param bool $flush  Whether to flush changes to the database immediately.
+     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -36,6 +41,11 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * Removes a User entity from the database.
+     *
+     * @param User $entity The User entity to be removed.
+     * @param bool $flush  Whether to flush changes to the database immediately.
+     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -47,6 +57,13 @@ class UserRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Finds active users created since a specified date.
+     *
+     * @param \DateTime $sinceDate The date since which to find active users.
+     *
+     * @return User[] An array of active User entities.
+     */
     public function findActiveUsersCreatedSince(\DateTime $sinceDate)
     {
         return $this->createQueryBuilder('u')

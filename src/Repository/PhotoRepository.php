@@ -24,6 +24,11 @@ class PhotoRepository extends ServiceEntityRepository
     }
 
     /**
+     * Adds a Photo entity to the database.
+     *
+     * @param Photo $entity The Photo entity to be added.
+     * @param bool $flush  Whether to flush changes to the database immediately.
+     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -36,6 +41,11 @@ class PhotoRepository extends ServiceEntityRepository
     }
 
     /**
+     * Removes a Photo entity from the database.
+     *
+     * @param Photo $entity The Photo entity to be removed.
+     * @param bool $flush  Whether to flush changes to the database immediately.
+     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
