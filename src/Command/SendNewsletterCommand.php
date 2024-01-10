@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 
 class SendNewsletterCommand extends Command
 {
@@ -62,7 +63,7 @@ class SendNewsletterCommand extends Command
         $message = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id interdum nibh. Phasellus blandit tortor in cursus convallis. Praesent et tellus fermentum, pellentesque lectus at, tincidunt risus. Quisque in nisl malesuada, aliquet nibh at, molestie libero.';
 
         $email = (new TemplatedEmail())
-            ->from($this->parameterBag->get('MAILER_FROM'))
+            ->from(new Address($this->parameterBag->get('MAILER_FROM'), $senderName))
             ->to($recipientEmail)
             ->subject($subject)
             ->htmlTemplate('emails/newsletter.html.twig')
