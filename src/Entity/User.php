@@ -27,24 +27,28 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=25)
+     * @Assert\NotBlank
      * @Assert\Length(min=2, max=25)
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=25)
+     * @Assert\NotBlank
      * @Assert\Length(min=2, max=25)
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="string", length=50, unique=true)
+     * @Assert\NotBlank
      * @Assert\Email
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
      * @Assert\Length(min=6, max=50)
      * @Assert\Regex(
      *     pattern="/\d/",

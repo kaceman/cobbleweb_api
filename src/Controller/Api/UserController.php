@@ -54,11 +54,16 @@ class UserController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         // Find the user by email
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $data['username']]);
 
         // Check user credentials
         if (!$user || !$passwordEncoder->isPasswordValid($user, $data['password'])) {
-            return new JsonResponse(['message' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['success' => false, 'message' => 'Invalid credentials.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Check user if is active
+        if (!$user->getActive()) {
+            return new JsonResponse(['success' => false, 'message' => 'The user is not active, please contact Administrator'], Response::HTTP_UNAUTHORIZED);
         }
 
         $token = $JWTManager->create($user);

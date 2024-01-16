@@ -22,8 +22,8 @@ class UserService
         EntityManagerInterface $entityManager,
         UserPasswordEncoderInterface $passwordEncoder,
         ValidatorInterface $validator,
-        string $AWS_FLAG,
-        AWSService $awsService
+        AWSService $awsService,
+        string $AWS_FLAG
     ) {
         $this->entityManager = $entityManager;
         $this->passwordEncoder = $passwordEncoder;
@@ -55,22 +55,29 @@ class UserService
         $this->generateFullName($user);
         $this->handleAvatar($user, $data['avatar']);
 
+        // Set the user's password
+        $user->setPassword($data['password']);
+
         $errors = $this->validator->validate($user);
 
-        $errorMessages[] = $this->handlePhotos($user, $data['photos']);
-
-        // Set and hash the user's password
-        $user->setPassword($this->passwordEncoder->encodePassword($user, $data['password']));
+        $handlingPhotos = $this->handlePhotos($user, $data['photos']);
+        if(!is_null($handlingPhotos)){
+            $errorMessages[] = $handlingPhotos;
+        }
 
         // If there are validation errors, return an error response
         if (count($errors) > 0) {
             foreach ($errors as $error) {
                 $errorMessages[] = $error->getMessage();
             }
+        }
 
+        // If there are validation errors, return an error response
+        if (count($errorMessages) > 0) {
             return ['success' => false, 'errors' => $errorMessages];
         }
 
+        // Set and hash the user's password
         $user->setPassword($this->passwordEncoder->encodePassword($user, $data['password']));
 
         $this->entityManager->persist($user);
